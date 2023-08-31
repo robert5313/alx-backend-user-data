@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 """
-Main file
+Password encryption
 """
+import bcrypt
 
-filter_datum = __import__('filtered_logger').filter_datum
 
-fields = ["password", "date_of_birth"]
-messages = ["name=egg;email=eggmin@eggsample.com;password=eggcellent;date_of_birth=12/12/1986;", "name=bob;email=bob@dylan.com;password=bobbycool;date_of_birth=03/04/1993;"]
+def hash_password(password: str) -> bytes:
+    """ Returns a salted password which is a string byte """
+    encoded = password.encode()
+    hashed = bcrypt.hashpw(encoded, bcrypt.gensalt())
 
-for message in messages:
-    print(filter_datum(fields, 'xxx', message, ';'))
+    return hashed
+
+
+def is_valid(hashed_password: bytes, password: str) -> bool:
+    """ The code checks if the provided password matches the hashed password """
+    valid = False
+    encoded = password.encode()
+    if bcrypt.checkpw(encoded, hashed_password):
+        valid = True
+    return valid
