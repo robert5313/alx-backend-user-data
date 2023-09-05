@@ -1,22 +1,43 @@
 #!/usr/bin/env python3
 """
-Password encryption
+Main file
 """
-import bcrypt
+
+import re
+import logging
+
+filter_datum = __import__('filtered_logger').filter_datum
+
+fields = ["password", "date_of_birth"]
+messages = ["name=egg;email=eggmin@eggsample.com;password=eggcellent;date_of_birth=12/12/1986;", "name=bob;email=bob@dylan.com;password=bobbycool;date_of_birth=03/04/1993;"]
+
+for message in messages:
+    print(filter_datum(fields, 'xxx', message, ';'))
 
 
-def hash_password(password: str) -> bytes:
-    """ Returns a salted password which is a string byte """
-    encoded = password.encode()
-    hashed = bcrypt.hashpw(encoded, bcrypt.gensalt())
+class RedactingFormatter(logging.Formatter):
+    """ Redacting Formatter class
+        """
 
-    return hashed
+    REDACTION = "***"
+    FORMAT = "[HOLBERTON] %(name)s %(levelname)s %(asctime)-15s: %(message)s"
+    SEPARATOR = ";"
 
+    def __init__(self):
+        super(RedactingFormatter, self).__init__(self.FORMAT)
 
-def is_valid(hashed_password: bytes, password: str) -> bool:
-    """ The code checks if the provided password matches the hashed password """
-    valid = False
-    encoded = password.encode()
-    if bcrypt.checkpw(encoded, hashed_password):
-        valid = True
-    return valid
+    def format(self, record: logging.LogRecord) -> str:
+        NotImplementedError
+
+RedactingFormatter = __import__('filtered_logger').RedactingFormatter
+
+message = "name=Bob;email=bob@dylan.com;ssn=000-123-0000;password=bobby2019;"
+log_record = logging.LogRecord("my_logger", logging.INFO, None, None, message, None, None)
+formatter = RedactingFormatter(fields=("email", "ssn", "password"))
+print(formatter.format(log_record))
+
+get_logger = __import__('filtered_logger').get_logger
+PII_FIELDS = __import__('filtered_logger').PII_FIELDS
+
+print(get_logger.__annotations__.get('return'))
+print("PII_FIELDS: {}".format(len(PII_FIELDS)))
